@@ -1,4 +1,4 @@
-var statesData =
+var countriesData =
 {
 "type": "FeatureCollection",
 
