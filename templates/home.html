@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 {% load staticfiles %}
+{% load js %}
 
 <html lang="en">
 <head>
@@ -59,12 +60,13 @@
 <div id="mapid"></div>
 
 <script type="text/javascript" src="https://leafletjs.com/examples/choropleth/us-states.js"></script>
+<script type="text/javascript" src="http://18.236.145.222/map/static/map/countriesMedium.js"></script>
 
 <script>
 
     var map = L.map('mapid', {
         minZoom: 3,
-        maxZoom: 7
+        maxZoom: 6
     });
 
     {#Set view over world#}
@@ -110,11 +112,59 @@
                       '#FFEDA0';
 }
 
+        function getMyColor(d) {
+        return d == null ? '#636363' :
+               d > 0.3  ? '#800026' :
+               d > 0.2   ? '#BD0026' :
+               d > 0.1   ? '#E31A1C' :
+               d > 0.05   ? '#FC4E2A' :
+               d > 0.01    ? '#FD8D3C' :
+               d > 0.001    ? '#FEB24C' :
+               d > 0.0001    ? '#FED976' :
+                           '#FFEDA0';
+}
+
+
+    // Assigning diseases statistics from database to js variable
+    var diseases = {{ diseases | js }};
+
+    //function return the statistic of a country via its country code
+    function getNumeric(country_data) {
+
+        //get country code for select country
+        const code = country_data.properties.iso_a3;
+
+        //getting disease data for the corresponding country from database via country code
+        const country = diseases.find(disease => disease.country === code);
+
+        //if (country) console.log("%s : %d", code, country.numeric);
+
+        //if data is available for this country, return the statistic as percentage of country pop
+        if (country) {
+            const percent = getPercent(country.numeric, country_data.properties.pop_est);
+            return percent;
+        }
+        else {return 0}
+        {#return country.numeric#}
+
+    }
+
+    //takes disease statistic and country population as variables
+    function getPercent(percentFor,percentOf) {
+        const fraction = (percentFor/percentOf*100);
+        //rounds to 3 decimal places
+        const rounded = Number(fraction.toFixed(4));
+        {#console.log("Pop:%d Disease:%d Percent:%f ", percentOf, percentFor, rounded);#}
+
+        return rounded;
+    }
+
 
     {# Styling function #}
     function style(feature) {
         return {
-            fillColor: getColor(feature.properties.density),
+            //fillColor: getColor(feature.properties.density),
+            fillColor: getMyColor(getNumeric(feature)),
             weight: 2,
             opacity: 1,
             color: 'white',
@@ -124,6 +174,7 @@
     }
 
 
+    var geojson = L.geoJson(countriesData, {style: style}).addTo(map);
     {#var geojson = L.geoJson(statesData, {style: style}).addTo(map);#}
     {#map.fitBounds(geojson.getBounds());#}
 
@@ -131,66 +182,66 @@
     {# ------------------------ #}
 
     {# Listener to highlight state on mouse hover  #}
-    function highlightFeature(e) {
-        var layer = e.target;
-
-        layer.setStyle({
-            weight: 5,
-            color: '#666',
-            dashArray: '',
-            fillOpacity: 0.7
-        });
-
-        if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-            layer.bringToFront();
-        }
-
-        info.update(layer.feature.properties);
-
-    }
-
-    var geojson; {# must declare geojson variable before listeners, assign to layer later #}
-
+{#    function highlightFeature(e) {#}
+{#        var layer = e.target;#}
+{##}
+{#        layer.setStyle({#}
+{#            weight: 5,#}
+{#            color: '#666',#}
+{#            dashArray: '',#}
+{#            fillOpacity: 0.7#}
+{#        });#}
+{##}
+{#        if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {#}
+{#            layer.bringToFront();#}
+{#        }#}
+{##}
+{#        info.update(layer.feature.properties);#}
+{##}
+{#    }#}
+{##}
+{#    var geojson; {# must declare geojson variable before listeners, assign to layer later #}
+{##}
     {# On mouse out listener (reset layer style to default) #}
-    function resetHighlight(e) {
-        geojson.resetStyle(e.target);
-        info.update();
-    }
-
+{#    function resetHighlight(e) {#}
+{#        geojson.resetStyle(e.target);#}
+{#        info.update();#}
+{#    }#}
+{##}
     {#  use the onEachFeature option to add the listeners state layers: #}
-    function onEachFeature(feature, layer) {
-        layer.on({
-            mouseover: highlightFeature,
-            mouseout: resetHighlight,
-        });
-    }
-
+{#    function onEachFeature(feature, layer) {#}
+{#        layer.on({#}
+{#            mouseover: highlightFeature,#}
+{#            mouseout: resetHighlight,#}
+{#        });#}
+{#    }#}
+{##}
     {# Assign GeoJSON to layer #}
-    geojson = L.geoJson(statesData, {
-        style: style,
-        onEachFeature: onEachFeature
-    }).addTo(map);
-
-
-
+{#    geojson = L.geoJson(statesData, {#}
+{#        style: style,#}
+{#        onEachFeature: onEachFeature#}
+{#    }).addTo(map);#}
+{##}
+{##}
+{##}
     {# Create custom control popup #}
     {# --------------------------- #}
-    var info = L.control();
-
-    info.onAdd = function (map) {
-        this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
-        this.update();
-        return this._div;
-    };
-
-    // method that we will use to update the control based on feature properties passed
-    info.update = function (props) {
-        this._div.innerHTML = '<h4>US Population Density</h4>' +  (props ?
-            '<b>' + props.name + '</b><br />' + props.density + ' people / mi<sup>2</sup>'
-            : 'Hover over a state');
-    };
-
-    info.addTo(map);
+{#    var info = L.control();#}
+{##}
+{#    info.onAdd = function (map) {#}
+{#        this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"#}
+{#        this.update();#}
+{#        return this._div;#}
+{#    };#}
+{##}
+{#    // method that we will use to update the control based on feature properties passed#}
+{#    info.update = function (props) {#}
+{#        this._div.innerHTML = '<h4>US Population Density</h4>' +  (props ?#}
+{#            '<b>' + props.name + '</b><br />' + props.density + ' people / mi<sup>2</sup>'#}
+{#            : 'Hover over a state');#}
+{#    };#}
+{##}
+{#    info.addTo(map);#}
 
 
 
@@ -201,8 +252,8 @@ Text here too
 <div>
     {%  for disease in diseases %}
         <div class="diseasesname">
-        <h3>{{ disease.label | capfirst}}</h3>
-        <p class="hidden">{{ disease.desc }}</p>
+        <h3>{{ disease.country}}</h3>
+        <p class="hidden">{{ disease.numeric }}</p>
         </div>
     {% endfor %}
 </div>
