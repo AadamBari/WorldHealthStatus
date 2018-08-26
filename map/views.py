@@ -13,7 +13,15 @@ def home(request):
 
     context = {
         'diseases': altered_diseases,
+        'disease_name': get_disease_parameter("HIV_0000000006"),
     }
 
     return render(request, 'home.html', context)
+
+
+# function to return disease parameter (ie name of disease statistic)
+def get_disease_parameter(key):
+    diseases_dict = {'HIV_0000000006': 'HIV Mortality Rate'}
+    name = diseases_dict[key]
+    return name
 
