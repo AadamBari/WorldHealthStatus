@@ -101,6 +101,7 @@
 
     {# Adding colour #}
 
+    /*
     function getColor(d) {
     return d > 1000 ? '#800026' :
            d > 500  ? '#BD0026' :
@@ -111,10 +112,10 @@
            d > 10   ? '#FED976' :
                       '#FFEDA0';
 }
+*/
 
         function getMyColor(d) {
-        return d == null ? '#636363' :
-               d > 0.3  ? '#800026' :
+        return d > 0.3  ? '#800026' :
                d > 0.2   ? '#BD0026' :
                d > 0.1   ? '#E31A1C' :
                d > 0.05   ? '#FC4E2A' :
@@ -128,20 +129,27 @@
     // Assigning diseases statistics from database to js variable
     var diseases = {{ diseases | js }};
 
-    //function return the statistic of a country via its country code
-    function getNumeric(country_data) {
+    //function to return the disease statistic as a percentage of a country population
+    // its country code is passed in to access database object "diseases"
+    function getStatistic(country_data) {
 
         //get country code for select country
-        const code = country_data.properties.iso_a3;
+        const code = country_data.iso_a3;
 
         //getting disease data for the corresponding country from database via country code
-        const country = diseases.find(disease => disease.country === code);
+        function getCountryObject(country_code) {
+            return diseases.find(disease => disease.country === country_code);
+        }
+        const country = getCountryObject(code);
+
+        //so nested function can be used outside
+        getStatistic.getCountryObject = getCountryObject;
 
         //if (country) console.log("%s : %d", code, country.numeric);
 
         //if data is available for this country, return the statistic as percentage of country pop
         if (country) {
-            const percent = getPercent(country.numeric, country_data.properties.pop_est);
+            const percent = getPercent(country.numeric, country_data.pop_est);
             return percent;
         }
         else {return 0}
@@ -164,7 +172,7 @@
     function style(feature) {
         return {
             //fillColor: getColor(feature.properties.density),
-            fillColor: getMyColor(getNumeric(feature)),
+            fillColor: getMyColor(getStatistic(feature.properties)),
             weight: 2,
             opacity: 1,
             color: 'white',
@@ -174,7 +182,7 @@
     }
 
 
-    var geojson = L.geoJson(countriesData, {style: style}).addTo(map);
+    {#var geojson = L.geoJson(countriesData, {style: style}).addTo(map);#}
     {#var geojson = L.geoJson(statesData, {style: style}).addTo(map);#}
     {#map.fitBounds(geojson.getBounds());#}
 
@@ -182,77 +190,109 @@
     {# ------------------------ #}
 
     {# Listener to highlight state on mouse hover  #}
-{#    function highlightFeature(e) {#}
-{#        var layer = e.target;#}
-{##}
-{#        layer.setStyle({#}
-{#            weight: 5,#}
-{#            color: '#666',#}
-{#            dashArray: '',#}
-{#            fillOpacity: 0.7#}
-{#        });#}
-{##}
-{#        if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {#}
-{#            layer.bringToFront();#}
-{#        }#}
-{##}
-{#        info.update(layer.feature.properties);#}
-{##}
-{#    }#}
-{##}
-{#    var geojson; {# must declare geojson variable before listeners, assign to layer later #}
-{##}
-    {# On mouse out listener (reset layer style to default) #}
-{#    function resetHighlight(e) {#}
-{#        geojson.resetStyle(e.target);#}
-{#        info.update();#}
-{#    }#}
-{##}
-    {#  use the onEachFeature option to add the listeners state layers: #}
-{#    function onEachFeature(feature, layer) {#}
-{#        layer.on({#}
-{#            mouseover: highlightFeature,#}
-{#            mouseout: resetHighlight,#}
-{#        });#}
-{#    }#}
-{##}
-    {# Assign GeoJSON to layer #}
-{#    geojson = L.geoJson(statesData, {#}
-{#        style: style,#}
-{#        onEachFeature: onEachFeature#}
-{#    }).addTo(map);#}
-{##}
-{##}
-{##}
+    function highlightFeature(e) {
+        var layer = e.target;
+
+        layer.setStyle({
+            weight: 2,
+            color: '#666',
+            dashArray: '',
+            fillOpacity: 0.7
+        });
+
+        if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+            layer.bringToFront();
+        }
+
+        info.update(layer.feature.properties);
+
+    }
+
+    var geojson; // must declare geojson variable before listeners, assign to layer later
+
+     //On mouse out listener (reset layer style to default)
+    function resetHighlight(e) {
+        geojson.resetStyle(e.target);
+        info.update();
+    }
+
+      //use the onEachFeature option to add the listeners state layers:
+    function onEachFeature(feature, layer) {
+        layer.on({
+            mouseover: highlightFeature,
+            mouseout: resetHighlight,
+        });
+    }
+
+     //Assign GeoJSON to layer
+    geojson = L.geoJson(countriesData, {
+        style: style,
+        onEachFeature: onEachFeature
+    }).addTo(map);
+
+
+
     {# Create custom control popup #}
     {# --------------------------- #}
-{#    var info = L.control();#}
-{##}
-{#    info.onAdd = function (map) {#}
-{#        this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"#}
-{#        this.update();#}
-{#        return this._div;#}
-{#    };#}
-{##}
-{#    // method that we will use to update the control based on feature properties passed#}
-{#    info.update = function (props) {#}
-{#        this._div.innerHTML = '<h4>US Population Density</h4>' +  (props ?#}
-{#            '<b>' + props.name + '</b><br />' + props.density + ' people / mi<sup>2</sup>'#}
-{#            : 'Hover over a state');#}
-{#    };#}
-{##}
-{#    info.addTo(map);#}
+    var info = L.control();
+
+    info.onAdd = function (map) {
+        this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+        this.update();
+        return this._div;
+    };
+
+    // method that we will use to update the control based on feature properties passed
+    info.update = function (props) {
+
+        var value;
+
+        //if the data exists
+        if (props) {
+            value = getStatistic(props);
+        }
+        else {value = "Zero or N/A";}
+
+
+        this._div.innerHTML = '<h4>{{ disease_name }}</h4>' +  (props ?
+            '<b>' + props.name + ": " + value + '%</b><br />Population: ' + props.pop_est
+            : 'Hover over a country');
+    };
+
+    info.addTo(map);
+
+
+    /* Custom Legend Control */
+    var legend = L.control({position: 'bottomright'});
+
+    legend.onAdd = function (map) {
+
+        var div = L.DomUtil.create('div', 'info legend'),
+            grades = [0, 0.0001, 0.001, 0.01, 0.05, 0.1, 0.2, 0.3],
+            labels = [];
+
+        // loop through our density intervals and generate a label with a colored square for each interval
+        for (var i = 0; i < grades.length; i++) {
+            div.innerHTML +=
+                '<i style="background:' + getMyColor(grades[i]) + '"></i> ' +
+                grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '%<br>' : '%+');
+        }
+
+        return div;
+    };
+
+legend.addTo(map);
 
 
 
 </script>
 
-Text here too
+<h2>{{ disease_name }}</h2>
 
 <div>
     {%  for disease in diseases %}
         <div class="diseasesname">
-        <h3>{{ disease.country}}</h3>
+        <h4>{{ disease.country}}</h4>
         <p class="hidden">{{ disease.numeric }}</p>
         </div>
     {% endfor %}
@@ -260,3 +300,34 @@ Text here too
 
 </body>
 </html>
+
+<style>
+
+    {# Info box CSS   #}
+    .info {
+        padding: 6px 8px;
+        font: 14px/16px Arial, Helvetica, sans-serif;
+        background: white;
+        background: rgba(255,255,255,0.8);
+        box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        border-radius: 5px;
+    }
+    .info h4 {
+        margin: 0 0 5px;
+        color: #777;
+    }
+
+    {# Legend CSS#}
+
+    .legend {
+    line-height: 25px;
+    color: #555;
+    }
+    .legend i {
+        width: 18px;
+        height: 18px;
+        float: left;
+        margin-right: 8px;
+        opacity: 0.7;
+    }
+</style>
