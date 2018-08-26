@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>World Health Status</title>
+</head>
+<body>
+
+</body>
+</html><!DOCTYPE html>
+{% load staticfiles %}
+{% load js %}
+
+<html lang="en">
+<head>
+
+
+
+    <link rel="stylesheet" type="text/css" href="{% static 'map/style.css' %}" />
+    {#Bootstrap CSS#}
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" />
+    {#Leaflet CSS#}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css"
+       integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ=="
+       crossorigin=""/>
+    {#Leaflet JS#}
+     <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"
+       integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw=="
+       crossorigin=""></script>
+    {#Boostrap JS#}
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.bundle.min.js" integrity="sha384-u/bQvRA/1bobcXlcEYpsEdFVK/vJs3+T+nXLsBYJthmdBuavHvAW6UsmqO2Gd/F9" crossorigin="anonymous"></script>
+
+    {# TopoJSON #}
+
+
+    {# CSS #}
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+        html, body, #mapid {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+
+</head>
+<body>
+
+<nav class="navbar navbar-expand-sm bg-danger navbar-dark">
+  <ul class="navbar-nav">
+    <li class="nav-item active">
+      <a class="nav-link" href="#">World Health Status</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link disabled" href="#">Country</a>
+    </li>
+    <li class="dropdown">
+      <a class="nav-link" href="#">Disease</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link disabled" href="#">About</a>
+    </li>
+  </ul>
+</nav>
+
+<div id="mapid"></div>
+
+<script type="text/javascript" src="https://leafletjs.com/examples/choropleth/us-states.js"></script>
+<script type="text/javascript" src="http://18.236.145.222/map/static/map/countriesMedium.js"></script>
+
+<script>
+
+    var map = L.map('mapid', {
+        minZoom: 3,
+        maxZoom: 6
+    });
+
+    {#Set view over world#}
+    map.setView([20, 0], 2);
+
+
+
+{#    L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiYWFkYW0iLCJhIjoiY2pqZzU0bjRhMzUybjNwbW1udzQ1aDJxbyJ9.cyrGNSYJFMvrxASXlaJ63g', {#}
+{#    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',#}
+{#    maxZoom: 6, minZoom: 3,#}
+{#    id: 'mapbox.streets',#}
+{#    accessToken: 'pk.eyJ1IjoiYWFkYW0iLCJhIjoiY2pqZzU0bjRhMzUybjNwbW1udzQ1aDJxbyJ9.cyrGNSYJFMvrxASXlaJ63g'#}
+{# }).addTo(map); #}
+
+
+
+    map.createPane('labels');
+
+    // This pane is above markers but below popups
+    map.getPane('labels').style.zIndex = 650;
+    map.getPane('labels').style.pointerEvents = 'none';
+
+    var positron = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
+        attribution: '©OpenStreetMap, ©CartoDB',
+    }).addTo(map);
+
+    var positronLabels = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
+            attribution: '©OpenStreetMap, ©CartoDB',
+            pane: 'labels'
+    }).addTo(map);
+
+
+    {# Adding colour #}
+
+    /*
+    function getColor(d) {
+    return d > 1000 ? '#800026' :
+           d > 500  ? '#BD0026' :
+           d > 200  ? '#E31A1C' :
+           d > 100  ? '#FC4E2A' :
+           d > 50   ? '#FD8D3C' :
+           d > 20   ? '#FEB24C' :
+           d > 10   ? '#FED976' :
+                      '#FFEDA0';
+}
+*/
+
+        function getMyColor(d) {
+        return d > 0.3  ? '#800026' :
+               d > 0.2   ? '#BD0026' :
+               d > 0.1   ? '#E31A1C' :
+               d > 0.05   ? '#FC4E2A' :
+               d > 0.01    ? '#FD8D3C' :
+               d > 0.001    ? '#FEB24C' :
+               d > 0.0001    ? '#FED976' :
+                           '#FFEDA0';
+}
+
+
+    // Assigning diseases statistics from database to js variable
+    var diseases = {{ diseases | js }};
+
+    //function to return the disease statistic as a percentage of a country population
+    // its country code is passed in to access database object "diseases"
+    function getStatistic(country_data) {
+
+        //get country code for select country
+        const code = country_data.iso_a3;
+
+        //getting disease data for the corresponding country from database via country code
+        function getCountryObject(country_code) {
+            return diseases.find(disease => disease.country === country_code);
+        }
+        const country = getCountryObject(code);
+
+        //so nested function can be used outside
+        getStatistic.getCountryObject = getCountryObject;
+
+        //if (country) console.log("%s : %d", code, country.numeric);
+
+        //if data is available for this country, return the statistic as percentage of country pop
+        if (country) {
+            const percent = getPercent(country.numeric, country_data.pop_est);
+            return percent;
+        }
+        else {return 0}
+        {#return country.numeric#}
+
+    }
+
+    //takes disease statistic and country population as variables
+    function getPercent(percentFor,percentOf) {
+        const fraction = (percentFor/percentOf*100);
+        //rounds to 3 decimal places
+        const rounded = Number(fraction.toFixed(4));
+        {#console.log("Pop:%d Disease:%d Percent:%f ", percentOf, percentFor, rounded);#}
+
+        return rounded;
+    }
+
+
+    {# Styling function #}
+    function style(feature) {
+        return {
+            //fillColor: getColor(feature.properties.density),
+            fillColor: getMyColor(getStatistic(feature.properties)),
+            weight: 2,
+            opacity: 1,
+            color: 'white',
+            dashArray: '3',
+            fillOpacity: 0.7
+        };
+    }
+
+
+    {#var geojson = L.geoJson(countriesData, {style: style}).addTo(map);#}
+    {#var geojson = L.geoJson(statesData, {style: style}).addTo(map);#}
+    {#map.fitBounds(geojson.getBounds());#}
+
+    {# Adding interaction #}
+    {# ------------------------ #}
+
+    {# Listener to highlight state on mouse hover  #}
+    function highlightFeature(e) {
+        var layer = e.target;
+
+        layer.setStyle({
+            weight: 2,
+            color: '#666',
+            dashArray: '',
+            fillOpacity: 0.7
+        });
+
+        if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+            layer.bringToFront();
+        }
+
+        info.update(layer.feature.properties);
+
+    }
+
+    var geojson; // must declare geojson variable before listeners, assign to layer later
+
+     //On mouse out listener (reset layer style to default)
+    function resetHighlight(e) {
+        geojson.resetStyle(e.target);
+        info.update();
+    }
+
+      //use the onEachFeature option to add the listeners state layers:
+    function onEachFeature(feature, layer) {
+        layer.on({
+            mouseover: highlightFeature,
+            mouseout: resetHighlight,
+        });
+    }
+
+     //Assign GeoJSON to layer
+    geojson = L.geoJson(countriesData, {
+        style: style,
+        onEachFeature: onEachFeature
+    }).addTo(map);
+
+
+
+    {# Create custom control popup #}
+    {# --------------------------- #}
+    var info = L.control();
+
+    info.onAdd = function (map) {
+        this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+        this.update();
+        return this._div;
+    };
+
+    // method that we will use to update the control based on feature properties passed
+    info.update = function (props) {
+
+        var value;
+
+        //if the data exists
+        if (props) {
+            value = getStatistic(props);
+        }
+        else {value = "Zero or N/A";}
+
+
+        this._div.innerHTML = '<h4>{{ disease_name }}</h4>' +  (props ?
+            '<b>' + props.name + ": " + value + '%</b><br />Population: ' + props.pop_est
+            : 'Hover over a country');
+    };
+
+    info.addTo(map);
+
+
+    /* Custom Legend Control */
+    var legend = L.control({position: 'bottomright'});
+
+    legend.onAdd = function (map) {
+
+        var div = L.DomUtil.create('div', 'info legend'),
+            grades = [0, 0.0001, 0.001, 0.01, 0.05, 0.1, 0.2, 0.3],
+            labels = [];
+
+        // loop through our density intervals and generate a label with a colored square for each interval
+        for (var i = 0; i < grades.length; i++) {
+            div.innerHTML +=
+                '<i style="background:' + getMyColor(grades[i]) + '"></i> ' +
+                grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '%<br>' : '%+');
+        }
+
+        return div;
+    };
+
+legend.addTo(map);
+
+
+
+</script>
+
+<h2>{{ disease_name }}</h2>
+
+<div>
+    {%  for disease in diseases %}
+        <div class="diseasesname">
+        <h4>{{ disease.country}}</h4>
+        <p class="hidden">{{ disease.numeric }}</p>
+        </div>
+    {% endfor %}
+</div>
+
+</body>
+</html>
+
+<style>
+
+    {# Info box CSS   #}
+    .info {
+        padding: 6px 8px;
+        font: 14px/16px Arial, Helvetica, sans-serif;
+        background: white;
+        background: rgba(255,255,255,0.8);
+        box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        border-radius: 5px;
+    }
+    .info h4 {
+        margin: 0 0 5px;
+        color: #777;
+    }
+
+    {# Legend CSS#}
+
+    .legend {
+    line-height: 25px;
+    color: #555;
+    }
+    .legend i {
+        width: 18px;
+        height: 18px;
+        float: left;
+        margin-right: 8px;
+        opacity: 0.7;
+    }
+</style>
