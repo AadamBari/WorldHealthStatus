@@ -21,7 +21,7 @@ def home(request):
 
 # function to return disease parameter (ie name of disease statistic)
 def get_disease_parameter(key):
-    diseases_dict = {'HIV_0000000006': 'HIV Fatality Rate'}
+    diseases_dict = {'HIV_0000000006': 'HIV Mortality Rate'}
     name = diseases_dict[key]
     return name
 
