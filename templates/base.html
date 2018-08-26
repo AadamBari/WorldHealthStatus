@@ -123,16 +123,11 @@
 }
 */
 
-        function getMyColor(d) {
-        return d > 0.3  ? '#800026' :
-               d > 0.2   ? '#BD0026' :
-               d > 0.1   ? '#E31A1C' :
-               d > 0.05   ? '#FC4E2A' :
-               d > 0.01    ? '#FD8D3C' :
-               d > 0.001    ? '#FEB24C' :
-               d > 0.0001    ? '#FED976' :
-                           '#FFEDA0';
-}
+    //getMyColor() function in this block
+</script>
+    {% block color %}
+    {% endblock %}
+<script>
 
 
     // Assigning diseases statistics from database to js variable
@@ -170,7 +165,7 @@
     function getPercent(percentFor,percentOf) {
         const fraction = (percentFor/percentOf*100);
         //rounds to 3 decimal places
-        const rounded = Number(fraction.toFixed(4));
+        const rounded = Number(fraction.toFixed(5));
         {#console.log("Pop:%d Disease:%d Percent:%f ", percentOf, percentFor, rounded);#}
 
         return rounded;
@@ -276,9 +271,9 @@
 
     legend.onAdd = function (map) {
 
-        var div = L.DomUtil.create('div', 'info legend'),
-            grades = [0, 0.0001, 0.001, 0.01, 0.05, 0.1, 0.2, 0.3],
-            labels = [];
+        //getMyColor() function in this block
+        {% block grades %}
+        {% endblock %}
 
         // loop through our density intervals and generate a label with a colored square for each interval
         for (var i = 0; i < grades.length; i++) {
