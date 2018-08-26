@@ -23,4 +23,7 @@ class Disease(models.Model):
     low = models.IntegerField(null=True, blank=True)
     high = models.IntegerField(null=True, blank=True)
 
+    def __str__(self):
+        return self.gho
+
 
