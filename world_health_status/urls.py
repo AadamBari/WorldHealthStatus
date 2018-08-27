@@ -28,6 +28,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('tb_mortality', views.tb_mortality, name='tb_mortality'),
     path('menin_mortality', views.menin_mortality, name='menin_mortality'),
+    path('cholera_mortality', views.cholera_mortality, name='cholera_mortality'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 
