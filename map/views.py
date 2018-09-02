@@ -56,15 +56,30 @@ def cholera_mortality(request):
     context = {
         'diseases': altered_diseases,
         'disease_name': get_disease_parameter("CHOLERA_0000000002"),
-        'disease_year': 2014,
+        'disease_year': 2016,
     }
 
     return render(request, 'cholera_mortality.html', context)
 
+
+def cholera_prevalence(request):
+    all_diseases = Disease.objects.filter(gho__iexact="CHOLERA_0000000001", year__exact=2016).values('country', 'numeric')
+
+    altered_diseases = list(all_diseases)
+    # print(altered_diseases)
+
+    context = {
+        'diseases': altered_diseases,
+        'disease_name': get_disease_parameter("CHOLERA_0000000001"),
+        'disease_year': 2016,
+    }
+
+    return render(request, 'cholera_prevalence.html', context)
+
 # function to return disease parameter (ie name of disease statistic)
 def get_disease_parameter(key):
     diseases_dict = {'HIV_0000000006': 'HIV Mortality Rate', 'TB_e_mort_exc_tbhiv_num': 'TB Mortality Rate',
-                     'MENING_1': 'Meningitis mortality rate', 'CHOLERA_0000000002': 'Cholera Mortality Rate'}
+                     'MENING_1': 'Meningitis mortality rate', 'CHOLERA_0000000002': 'Cholera Mortality Rate', 'CHOLERA_0000000001': 'Cholera Prevalence (Cases)'}
     name = diseases_dict[key]
     return name
 
