@@ -258,7 +258,7 @@
         else {value = "Zero or N/A";}
 
 
-        this._div.innerHTML = '<h4>{{ disease_name }}</h4>' +  (props ?
+        this._div.innerHTML = '<h4>{{ disease_name }}</h4>' +  'Year: {{ disease_year }}</br>' + (props ?
             '<b>' + props.name + ": " + value + '%</b><br />Population: ' + props.pop_est
             : 'Hover over a country');
     };
