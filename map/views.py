@@ -14,6 +14,7 @@ def home(request):
     context = {
         'diseases': altered_diseases,
         'disease_name': get_disease_parameter("HIV_0000000006"),
+        'disease_year': 2017,
     }
 
     return render(request, 'home.html', context)
@@ -27,6 +28,7 @@ def tb_mortality(request):
     context = {
         'diseases': altered_diseases,
         'disease_name': get_disease_parameter("TB_e_mort_exc_tbhiv_num"),
+        'disease_year': 2016,
     }
 
     return render(request, 'tb_mortality.html', context)
@@ -40,6 +42,7 @@ def menin_mortality(request):
     context = {
         'diseases': altered_diseases,
         'disease_name': get_disease_parameter("MENING_1"),
+        'disease_year': 2014,
     }
 
     return render(request, 'menin_mortality.html', context)
@@ -53,6 +56,7 @@ def cholera_mortality(request):
     context = {
         'diseases': altered_diseases,
         'disease_name': get_disease_parameter("CHOLERA_0000000002"),
+        'disease_year': 2014,
     }
 
     return render(request, 'cholera_mortality.html', context)
