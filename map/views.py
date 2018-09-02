@@ -33,6 +33,22 @@ def tb_mortality(request):
 
     return render(request, 'tb_mortality.html', context)
 
+
+def tb_prevalence(request):
+    all_diseases = Disease.objects.filter(gho__iexact="TB_e_prev_num", year__exact=2014).values('country', 'numeric')
+
+    altered_diseases = list(all_diseases)
+    # print(altered_diseases)
+
+    context = {
+        'diseases': altered_diseases,
+        'disease_name': get_disease_parameter("TB_e_prev_num"),
+        'disease_year': 2014,
+    }
+
+    return render(request, 'tb_prevalence.html', context)
+
+
 def menin_mortality(request):
     all_diseases = Disease.objects.filter(gho__iexact="MENING_1", year__exact=2014).values('country', 'numeric')
 
@@ -96,7 +112,8 @@ def cholera_prevalence(request):
 def get_disease_parameter(key):
     diseases_dict = {'HIV_0000000006': 'HIV Mortality Rate', 'TB_e_mort_exc_tbhiv_num': 'TB Mortality Rate',
                      'MENING_1': 'Meningitis mortality rate', 'CHOLERA_0000000002': 'Cholera Mortality Rate',
-                     'CHOLERA_0000000001': 'Cholera Prevalence (Cases)', 'MENING_2': 'Meningitis Prevalence (Cases)'}
+                     'CHOLERA_0000000001': 'Cholera Prevalence (Cases)', 'MENING_2': 'Meningitis Prevalence (Cases)',
+                     'TB_e_prev_num': 'TB Prevalence Cases)'}
     name = diseases_dict[key]
     return name
 
