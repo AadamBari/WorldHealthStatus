@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block color %}
+    <script>
+    function getMyColor(d) {
+        return d > 0.75    ? '#800026' :
+               d > 0.5    ? '#BD0026' :
+               d > 0.1    ? '#E31A1C' :
+               d > 0.05   ? '#FC4E2A' :
+               d > 0.01   ? '#FD8D3C' :
+               d > 0.005  ? '#FEB24C' :
+               d > 0.001 ? '#FED976' :
+                            '#FFEDA0';
+    }
+    </script>
+{% endblock %}
+
+{% block grades %}
+    var div = L.DomUtil.create('div', 'info legend'),
+            grades = [0, 0.0001, 0.001, 0.01, 0.05, 0.1, 0.2, 0.3],
+            labels = [];
+{% endblock %}
