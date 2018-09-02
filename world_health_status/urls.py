@@ -27,6 +27,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
     path('tb_mortality', views.tb_mortality, name='tb_mortality'),
+    path('tb_prevalence', views.tb_prevalence, name='tb_prevalence'),
     path('menin_mortality', views.menin_mortality, name='menin_mortality'),
     path('menin_prevalence', views.menin_prevalence, name='menin_prevalence'),
     path('cholera_mortality', views.cholera_mortality, name='cholera_mortality'),
